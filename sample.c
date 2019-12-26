@@ -3,6 +3,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <string.h>
+#include <locale.h>
 
 double average(long (*f)(void), int runs) {
   long total = 0;
@@ -95,7 +96,8 @@ void *startThread(void *args) {
 
 
 void runSimulation(long numSimulate) {
-  printf("Running %ld simulations\n\n", numSimulate);
+  setlocale(LC_NUMERIC, "");
+  printf("Running %'ld simulations\n\n", numSimulate);
 
   pthread_t threads[9];
   struct AvgArgs args[] = {
