@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -88,11 +89,14 @@ struct AvgArgs {
   long numSimulate;
 };
 
-void *startThread(void *args) {
+void* startThread(void *args) {
   struct AvgArgs *avg = (struct AvgArgs *)args;
   double total = average(avg->f, avg->numSimulate, avg->thread);
-  printf(avg->type, total);
-  return 0;
+  char* result;
+  asprintf(&result, avg->type, total);
+  return result;
+  //printf(avg->type, total);
+  //return 0;
 }
 
 
@@ -117,14 +121,16 @@ void runSimulation(long numSimulate) {
     pthread_create(&threads[i], NULL, startThread, (void *)&args[i]);
   }
   for(int i = 0; i < 9; i++) {
-    pthread_join(threads[i], NULL);
+    void* result;
+    pthread_join(threads[i], &result);
+    printf((char *)result);
   }
 }
 
 int main(void) {
   srand(time(0));
 
-  runSimulation(1000000);
+  runSimulation(100000000);
 
   exit(0);
 }
