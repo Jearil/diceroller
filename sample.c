@@ -1,19 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <pthread.h>
 
-float average(int (*f)(void), int runs) {
-  int total = 0;
-  for(int i = 0; i < runs; i++) {
+struct AvgArgs {
+  long (*f)(void);
+  long numSimulate;
+};
+
+double average(long (*f)(void), int runs) {
+  long total = 0;
+  for(long i = 0; i < runs; i++) {
     total += f();
   }
-  return (float)total / (float)runs;
+  return (double)total / (double)runs;
 }
 
-int roll(int numToRoll, int target, int explode) {
-  int numHit = 0;
-  for(int i = 0; i < numToRoll; i++) {
-    int roll = rand() % 6 + 1;
+long roll(long numToRoll, long target, long explode) {
+  long numHit = 0;
+  for(long i = 0; i < numToRoll; i++) {
+    long roll = rand() % 6 + 1;
     if (roll >= target) {
       numHit++;
       if (roll >= explode) {
@@ -24,62 +30,64 @@ int roll(int numToRoll, int target, int explode) {
   return numHit;
 }
 
-int simulate(int numAttacks, int toHit, int toWound, int explode) {
-  int hits = roll(numAttacks, toHit, explode);
-  int wounds = roll(hits, toWound, 7);
+long simulate(long numAttacks, long toHit, long toWound, long explode) {
+  long hits = roll(numAttacks, toHit, explode);
+  long wounds = roll(hits, toWound, 7);
   return wounds;
 }
 
-int normalHits() {
+long normalHits() {
   return simulate(21, 3, 4, 6);
 }
 
-int greatBlade() {
-  int normal = simulate(19, 3, 4, 6);
+long greatBlade() {
+  long normal = simulate(19, 3, 4, 6);
   normal += simulate(2, 3, 3, 7);
   return normal;
 }
 
-int bladeLeader() {
-  int normal = simulate(18, 3, 4, 6);
+long bladeLeader() {
+  long normal = simulate(18, 3, 4, 6);
   normal += simulate(3, 3, 3, 7);
   return normal;
 }
 
-int buffHits() {
+long buffHits() {
   return simulate(21, 2, 4, 6);
 }
 
-int buffGreatBlade() {
-  int normal = simulate(19, 2, 4, 6);
+long buffGreatBlade() {
+  long normal = simulate(19, 2, 4, 6);
   normal += simulate(2, 2, 3, 7);
   return normal;
 }
 
-int buffBladeLeader() {
-  int normal = simulate(18, 2, 4, 6);
+long buffBladeLeader() {
+  long normal = simulate(18, 2, 4, 6);
   normal += simulate(3, 2, 3, 7);
   return normal;
 }
 
-int explode() {
+long explode() {
   return simulate(21, 3, 4, 5);
 }
 
-int explodeGreatBlade() {
-  int normal = simulate(19, 3, 4, 5);
+long explodeGreatBlade() {
+  long normal = simulate(19, 3, 4, 5);
   normal += simulate(2, 3, 3, 7);
   return normal;
 }
 
-int explodeBladeLeader() {
-  int normal = simulate(18, 3, 4, 5);
+long explodeBladeLeader() {
+  long normal = simulate(18, 3, 4, 5);
   normal += simulate(3, 3, 3, 7);
   return normal;
 }
 
-void runSimulation(int numSimulate) {
-  printf("Running %d simulations\n\n", numSimulate);
+
+
+void runSimulation(long numSimulate) {
+  printf("Running %ld simulations\n\n", numSimulate);
 
   printf("no buffs                   : %f\n", average(normalHits, numSimulate));
   printf("no buffs, greatblade       : %f\n", average(greatBlade, numSimulate));
@@ -95,6 +103,6 @@ void runSimulation(int numSimulate) {
 int main(void) {
   srand(time(0));
 
-  runSimulation(1000000);
+  runSimulation(1000000000);
 }
 
