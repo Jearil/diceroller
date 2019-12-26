@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-
-struct AvgArgs {
-  long (*f)(void);
-  long numSimulate;
-};
+#include <string.h>
 
 double average(long (*f)(void), int runs) {
   long total = 0;
@@ -84,25 +80,49 @@ long explodeBladeLeader() {
   return normal;
 }
 
+struct AvgArgs {
+  char *type;
+  long (*f)(void);
+  long numSimulate;
+};
+
+void *startThread(void *args) {
+  struct AvgArgs *avg = (struct AvgArgs *)args;
+  double total = average(avg->f, avg->numSimulate);
+  printf(avg->type, total);
+  return 0;
+}
 
 
 void runSimulation(long numSimulate) {
   printf("Running %ld simulations\n\n", numSimulate);
 
-  printf("no buffs                   : %f\n", average(normalHits, numSimulate));
-  printf("no buffs, greatblade       : %f\n", average(greatBlade, numSimulate));
-  printf("no buffs, greatblade leader: %f\n", average(bladeLeader, numSimulate));
-  printf("hit buff                   : %f\n", average(buffHits, numSimulate));
-  printf("hit buff, greatblade       : %f\n", average(buffGreatBlade, numSimulate));
-  printf("hit buff, greatblade leader: %f\n", average(buffBladeLeader, numSimulate));
-  printf("exp buff                   : %f\n", average(explode, numSimulate));
-  printf("exp buff, greatblade       : %f\n", average(explodeGreatBlade, numSimulate));
-  printf("exp buff, greatblade leader: %f\n", average(explodeBladeLeader, numSimulate));
+  pthread_t threads[9];
+  struct AvgArgs args[] = {
+    {"no buffs                   : %f\n", normalHits, numSimulate},
+    {"no buffs, greatblade       : %f\n", greatBlade, numSimulate},
+    {"no buffs, greatblade leader: %f\n", bladeLeader, numSimulate},
+    {"hit buff                   : %f\n", buffHits, numSimulate},
+    {"hit buff, greatblade       : %f\n", buffGreatBlade, numSimulate},
+    {"hit buff, greatblade leader: %f\n", buffBladeLeader, numSimulate},
+    {"exp buff                   : %f\n", explode, numSimulate},
+    {"exp buff, greatblade       : %f\n", explodeGreatBlade, numSimulate},
+    {"exp buff, greatblade leader: %f\n", explodeBladeLeader, numSimulate}
+  };
+
+  for(int i = 0; i < 9; i++) {
+    pthread_create(&threads[i], NULL, startThread, (void *)&args[i]);
+  }
+  for(int i = 0; i < 9; i++) {
+    pthread_join(threads[i], NULL);
+  }
 }
 
 int main(void) {
   srand(time(0));
 
-  runSimulation(1000000000);
+  runSimulation(10000000);
+
+  exit(0);
 }
 
